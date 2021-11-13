@@ -98,7 +98,23 @@ class WebsocketClient(object):
         while not self.stop:
             try:
                 data = self.ws.recv()
-                msg = json.loads(data)
+                if data:
+                    msg = json.loads(data)
+                else:
+                    print("JSON Issue encountered, fix attempt 1")
+                    time.sleep(10)
+                    data = self.ws.recv()
+                    if data:
+                        msg = json.loads(data)
+                    else:
+                        print("JSON Issue encountered, fix attempt 2")
+                        time.sleep(10)
+                        data = self.ws.recv()
+                        if data:
+                            msg = json.loads(data)
+                        else:
+                            print("JSON Issue encountered a third time, quitting program :(")
+                            quit()
             except ValueError as e:
                 self.on_error(e)
             except Exception as e:

@@ -334,7 +334,7 @@ class AuthenticatedClient(PublicClient):
 
         Args:
             product_id (str): Product to order (eg. 'BTC-USD')
-            side (str): Order side ('buy' or 'sell)
+            side (str): Order side ('buy' or 'sell')
             price (Decimal): Price per cryptocurrency
             size (Decimal): Amount of cryptocurrency to buy or sell
             client_oid (Optional[str]): User-specified Order ID

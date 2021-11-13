@@ -4,7 +4,7 @@
 #
 # For public requests to the Coinbase exchange
 
-import requests
+import requests, time
 
 
 class PublicClient(object):
@@ -18,7 +18,7 @@ class PublicClient(object):
 
     """
 
-    def __init__(self, api_url='https://api.pro.coinbase.com', timeout=30):
+    def __init__(self, api_url='https://api.pro.coinbase.com', timeout=300):
         """Create cbpro API public client.
 
         Args:
@@ -47,7 +47,7 @@ class PublicClient(object):
                 ]
 
         """
-        return self._send_message('get', '/products')
+        return self._send_message('GET', '/products')
 
     def get_product_order_book(self, product_id, level=1):
         """Get a list of open orders for a product.
@@ -65,7 +65,6 @@ class PublicClient(object):
         maintain a full real-time order book using the websocket
         stream. Abuse of Level 3 via polling will cause your access to
         be limited or blocked.
-
         Args:
             product_id (str): Product
             level (Optional[int]): Order book level (1, 2, or 3).
@@ -266,7 +265,12 @@ class PublicClient(object):
         """
         url = self.url + endpoint
         r = self.session.request(method, url, params=params, data=data,
-                                 auth=self.auth, timeout=30)
+                                 auth=self.auth, timeout=300)
+        while r.status_code != 200:
+            print("JSON Status Code: ", r.status_code, " encountered. Waiting 60 seconds before trying again")
+            time.sleep(60)
+            r = self.session.get(url, params=params, auth=self.auth, timeout=300)
+
         return r.json()
 
     def _send_paginated_message(self, endpoint, params=None):
@@ -296,8 +300,14 @@ class PublicClient(object):
             params = dict()
         url = self.url + endpoint
         while True:
-            r = self.session.get(url, params=params, auth=self.auth, timeout=30)
+            r = self.session.get(url, params=params, auth=self.auth, timeout=300)
+            while r.status_code != 200:
+                print("JSON Status Code: ", r.status_code, " encountered. Waiting 60 seconds before trying again")
+                time.sleep(60)
+                r = self.session.get(url, params=params, auth=self.auth, timeout=300)
+
             results = r.json()
+
             for result in results:
                 yield result
             # If there are no more pages, we're done. Otherwise update `after`
